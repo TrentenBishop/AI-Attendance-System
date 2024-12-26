@@ -1,24 +1,33 @@
-from flask import Flask, render_template, request, jsonify
+import streamlit as st
 from threading import Thread
 import subprocess
 
-app = Flask(__name__)
+# Function to start the dataset recording in a separate thread
+def start_dataset(name):
+    subprocess.run(['python', 'Dataset.py'], input=name.encode())
 
-@app.route('/')
-def home():
-    return render_template('index.html')
-
-@app.route('/start_dataset', methods=['POST'])
-def start_dataset():
-    data = request.get_json()
-    name = data.get('name', 'Unknown')
-    Thread(target=lambda: subprocess.run(['python', 'Dataset.py'], input=name.encode())).start()
-    return jsonify({"status": "Dataset recording started", "name": name})
-
-@app.route('/start_attendance', methods=['POST'])
+# Function to start attendance tracking in a separate thread
 def start_attendance():
-    Thread(target=lambda: subprocess.run(['python', 'Attendance.py'])).start()
-    return jsonify({"status": "Attendance tracking started"})
+    subprocess.run(['python', 'Attendance.py'])
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# Streamlit UI components
+st.title("AI Attendance System")
+
+# Start dataset section
+st.subheader("Start Dataset Recording")
+name = st.text_input("Enter your name for dataset recording:")
+if st.button("Start Dataset"):
+    if name:
+        st.write(f"Starting dataset recording for {name}...")
+        # Run the dataset recording in a background thread
+        Thread(target=start_dataset, args=(name,)).start()
+    else:
+        st.error("Please enter a name.")
+
+# Start attendance section
+st.subheader("Start Attendance Tracking")
+if st.button("Start Attendance"):
+    st.write("Starting attendance tracking...")
+    # Run the attendance tracking in a background thread
+    Thread(target=start_attendance).start()
+
