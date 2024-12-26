@@ -1,6 +1,7 @@
 import streamlit as st
 from threading import Thread
 import subprocess
+subprocess.check_call([sys.executable, "-m", "pip", "install", "opencv-python-headless"])
 
 # Function to start the dataset recording in a separate thread
 def start_dataset(name):
